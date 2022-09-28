@@ -1,7 +1,6 @@
 import { Home } from "@/pages";
 
 import { createBrowserRouter } from "react-router-dom";
-import { Card } from "./components";
 
 export const router = createBrowserRouter([
   {
@@ -10,7 +9,6 @@ export const router = createBrowserRouter([
     children: [
       {
         path: ":id",
-        element: <Card />
       }
     ]
   },
