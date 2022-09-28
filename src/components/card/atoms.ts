@@ -32,4 +32,5 @@ export const PokemonText = styled.span<TAtomPokemonType>`
   color: ${(props) => props?.theme?.colors?.types?.[props?.type]};
   font-size: 1.25em;
   font-weight: bold;
+  text-transform: capitalize;
 `;

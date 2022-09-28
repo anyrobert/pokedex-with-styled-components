@@ -1,4 +1,4 @@
-import { Card } from "@/components";
+import { Card, Container, FlexBox } from "@/components";
 import { debounce } from "@/helpers";
 import { atomPokemon } from "@/store/atoms";
 import { selectorPokemonInfo } from "@/store/selectors";
@@ -27,23 +27,28 @@ export const Home = () => {
   const pokemonInfo = useRecoilValueLoadable(selectorPokemonInfo);
 
   return (
-    <div>
-      <input type="text" onChange={handleInputChange} />
-      {pokemonInfo.state !== "loading" &&
-        pokemonInfo.state !== "hasError" &&
-        pokemonInfo.contents && (
-          <Card
-            preview={
-              pokemonInfo.contents.sprites.versions["generation-v"][
-                "black-white"
-              ].animated.front_default
-            }
-            id={pokemonInfo.contents.id}
-            type={pokemonInfo.contents.types[0].type.name}
-            name={pokemonInfo.contents.name}
-            image={pokemonInfo.contents.sprites.other.dream_world.front_default}
-          />
-        )}
-    </div>
+    <Container>
+      <FlexBox align="flex-start" justify="center" direction="column" gap="xxs">
+        <input type="text" onChange={handleInputChange} />
+        {pokemonInfo.state === "loading" && <div>Loading...</div>}
+        {pokemonInfo.state !== "loading" &&
+          pokemonInfo.state !== "hasError" &&
+          pokemonInfo.contents && (
+            <Card
+              preview={
+                pokemonInfo.contents.sprites.versions["generation-v"][
+                  "black-white"
+                ].animated.front_default
+              }
+              id={pokemonInfo.contents.id}
+              type={pokemonInfo.contents.types[0].type.name}
+              name={pokemonInfo.contents.name}
+              image={
+                pokemonInfo.contents.sprites.other.dream_world.front_default
+              }
+            />
+          )}
+      </FlexBox>
+    </Container>
   );
 };
