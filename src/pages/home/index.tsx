@@ -1,4 +1,4 @@
-import { Card, Container, FlexBox } from "@/components";
+import { Card, Container, FlexBox, Input, Loader } from "@/components";
 import { debounce } from "@/helpers";
 import { atomPokemon } from "@/store/atoms";
 import { selectorPokemonInfo } from "@/store/selectors";
@@ -9,31 +9,38 @@ import { useRecoilState, useRecoilValueLoadable } from "recoil";
 
 export const Home = () => {
   const { id } = useParams<{ id: string }>();
-  const [_, setPokemon] = useRecoilState(atomPokemon);
+  const [pokemon, setPokemon] = useRecoilState(atomPokemon);
   const navigate = useNavigate();
   const handleInputChange: ChangeEventHandler<HTMLInputElement> = debounce(
     (e) => {
-      setPokemon(e.target.value);
-      navigate(`/${e.target.value}`);
+      const formattedValue = e.target.value.toLowerCase().trim();
+      setPokemon(formattedValue);
+      navigate(`/${formattedValue}`);
     }
   );
 
   useEffect(() => {
-    if (id) {
-      setPokemon(id);
-    }
+    if (!id) return;
+    setPokemon(id);
   }, []);
 
   const pokemonInfo = useRecoilValueLoadable(selectorPokemonInfo);
-
+  const isLoading = pokemonInfo.state === "loading";
+  const hasFoundPokemon =
+    pokemonInfo.state !== "loading" &&
+    pokemonInfo.state !== "hasError" &&
+    pokemonInfo.contents;
   return (
     <Container>
-      <FlexBox align="flex-start" justify="center" direction="column" gap="xxs">
-        <input type="text" onChange={handleInputChange} />
-        {pokemonInfo.state === "loading" && <div>Loading...</div>}
-        {pokemonInfo.state !== "loading" &&
-          pokemonInfo.state !== "hasError" &&
-          pokemonInfo.contents && (
+      <FlexBox align="center" justify="center" direction="column" gap="xxs">
+        <Input
+          type="text"
+          onChange={handleInputChange}
+          defaultValue={pokemon}
+        />
+        <FlexBox align="flex-start" direction="row" gap="xxs" justify="center">
+          {isLoading && <Loader />}
+          {hasFoundPokemon && (
             <Card
               preview={
                 pokemonInfo.contents.sprites.versions["generation-v"][
@@ -48,6 +55,7 @@ export const Home = () => {
               }
             />
           )}
+        </FlexBox>
       </FlexBox>
     </Container>
   );

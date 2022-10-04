@@ -12,7 +12,7 @@ export const selectorPokemonInfo = selector({
     const pokemon = get(atomPokemon);
     if (!pokemon) return;
     const { data } = await httpClient.get(
-      `pokemon/${pokemon.toLowerCase().trim()}`
+      `pokemon/${pokemon}`
     );
 
     return data;

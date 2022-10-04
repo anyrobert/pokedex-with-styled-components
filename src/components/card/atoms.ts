@@ -8,7 +8,7 @@ interface TAtomPokemonType {
 }
 
 export const Container = styled(FlexBox)`
-  max-width: 225px;
+  max-width: 350px;
   background-color: ${(props) => props?.theme?.colors?.neutral?.pure};
   border-radius: 5px;
   box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
