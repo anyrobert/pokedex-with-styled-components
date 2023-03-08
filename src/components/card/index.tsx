@@ -3,11 +3,11 @@ import { FlexBox } from "@/components";
 import { TPokemonType } from "@/interfaces";
 
 type Props = {
-  preview: string;
+  preview?: string;
   name: string;
-  image: string;
+  image?: string;
   type: TPokemonType;
-  id: string;
+  id: number;
 };
 
 export const Card = ({ preview, type, name, image, id }: Props) => {

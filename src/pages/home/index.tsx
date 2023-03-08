@@ -1,62 +1,137 @@
-import { Card, Container, FlexBox, Input, Loader } from "@/components";
+import {
+  Card,
+  Container,
+  FlexBox,
+  Input,
+  Loader,
+  PokedexView,
+} from "@/components";
+import PokemonsSection from "@/components/pokemon-list";
 import { debounce } from "@/helpers";
-import { atomPokemon } from "@/store/atoms";
-import { selectorPokemonInfo } from "@/store/selectors";
-import { ChangeEventHandler, useEffect } from "react";
+import {
+  atomPokemonFetch,
+  atomPokemons,
+  atomPokemonOffset,
+  atomPokemonSearch,
+} from "@/store/atoms";
+import {
+  selectorFetchPokemons,
+  selectorPokemon,
+  selectorPokemons,
+} from "@/store/selectors";
+import { ChangeEventHandler, useEffect, useMemo } from "react";
 
 import { useNavigate, useParams } from "react-router-dom";
-import { useRecoilState, useRecoilValueLoadable } from "recoil";
+import {
+  useRecoilRefresher_UNSTABLE,
+  useRecoilState,
+  useRecoilValueLoadable,
+  useSetRecoilState,
+} from "recoil";
 
 export const Home = () => {
   const { id } = useParams<{ id: string }>();
-  const [pokemon, setPokemon] = useRecoilState(atomPokemon);
+  const [pokemonSearch, setPokemonSearch] = useRecoilState(atomPokemonSearch);
+  const setFetchPokemons = useSetRecoilState(atomPokemonFetch);
+  const [offset, setOffset] = useRecoilState(atomPokemonOffset);
+  const [pokemons, setPokemons] = useRecoilState(atomPokemons);
+  const retryFetchPokemons = useRecoilRefresher_UNSTABLE(selectorFetchPokemons);
+
   const navigate = useNavigate();
   const handleInputChange: ChangeEventHandler<HTMLInputElement> = debounce(
     (e) => {
       const formattedValue = e.target.value.toLowerCase().trim();
-      setPokemon(formattedValue);
+      setPokemonSearch(formattedValue);
       navigate(`/${formattedValue}`);
     }
   );
 
   useEffect(() => {
     if (!id) return;
-    setPokemon(id);
+    setPokemonSearch(id);
   }, []);
 
-  const pokemonInfo = useRecoilValueLoadable(selectorPokemonInfo);
-  const isLoading = pokemonInfo.state === "loading";
+  const pokemonLoadable = useRecoilValueLoadable(selectorPokemon);
+  const pokemonsLoadable = useRecoilValueLoadable(selectorPokemons);
+  const fetchPokemonsLoadable = useRecoilValueLoadable(selectorFetchPokemons);
+
+  useEffect(() => {
+    if (
+      fetchPokemonsLoadable.state !== "hasValue" ||
+      !fetchPokemonsLoadable.contents
+    )
+      return;
+
+    setFetchPokemons(fetchPokemonsLoadable.contents);
+  }, [fetchPokemonsLoadable.contents, fetchPokemonsLoadable.state]);
+
+  useEffect(() => {
+    if (pokemonsLoadable.state !== "hasValue" || !pokemonsLoadable.contents)
+      return;
+
+    setPokemons([...pokemons, ...pokemonsLoadable.contents]);
+  }, [pokemonsLoadable.state, pokemonsLoadable.contents]);
+
+  const disabledFetchMore = useMemo(() => {
+    return (
+      fetchPokemonsLoadable.state === "loading" ||
+      fetchPokemonsLoadable.state === "hasError" ||
+      pokemonsLoadable.state === "loading" ||
+      pokemonsLoadable.state === "hasError"
+    );
+  }, [fetchPokemonsLoadable.state, pokemonsLoadable.state]);
+
+  const fetchError = useMemo(
+    () =>
+      fetchPokemonsLoadable.state === "hasError" ||
+      pokemonsLoadable.state === "hasError",
+    []
+  );
+
+  const isLoadingSingle = pokemonLoadable.state === "loading";
+  const isLoadingList = pokemonsLoadable.state === "loading";
   const hasFoundPokemon =
-    pokemonInfo.state !== "loading" &&
-    pokemonInfo.state !== "hasError" &&
-    pokemonInfo.contents;
+    pokemonLoadable.state !== "loading" &&
+    pokemonLoadable.state !== "hasError" &&
+    pokemonLoadable.contents;
+
   return (
     <Container>
       <FlexBox align="center" justify="center" direction="column" gap="xxs">
         <Input
           type="text"
           onChange={handleInputChange}
-          defaultValue={pokemon}
+          defaultValue={pokemonSearch}
         />
         <FlexBox align="flex-start" direction="row" gap="xxs" justify="center">
-          {isLoading && <Loader />}
+          {isLoadingSingle && <Loader />}
           {hasFoundPokemon && (
             <Card
               preview={
-                pokemonInfo.contents.sprites.versions["generation-v"][
+                pokemonLoadable.contents.sprites?.versions?.["generation-v"]?.[
                   "black-white"
-                ].animated.front_default
+                ]?.animated?.front_default
               }
-              id={pokemonInfo.contents.id}
-              type={pokemonInfo.contents.types[0].type.name}
-              name={pokemonInfo.contents.name}
+              id={pokemonLoadable.contents.id}
+              type={pokemonLoadable.contents.types[0].type.name}
+              name={pokemonLoadable.contents.name}
               image={
-                pokemonInfo.contents.sprites.other.dream_world.front_default
+                pokemonLoadable.contents.sprites.other?.dream_world
+                  ?.front_default ||
+                pokemonLoadable.contents.sprites.other?.["official-artwork"]
+                  ?.front_default
               }
             />
           )}
         </FlexBox>
       </FlexBox>
+      <PokemonsSection
+        pokemons={pokemons}
+        disabledFetch={disabledFetchMore}
+        hasErrors={fetchError}
+        loading={isLoadingList}
+        retryFetch={retryFetchPokemons}
+      />
     </Container>
   );
 };

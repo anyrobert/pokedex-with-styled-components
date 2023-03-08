@@ -25,6 +25,7 @@ export interface IFlexBoxProps {
   align: TAlignItems;
   width?: "xsm" | "sm" | "md" | "lg" | "xl";
   gap?: "xxxs" | "xxs" | "xs" | "sm" | "md" | "lg" | "xl" | "xxl" | "xxxl";
+  wrap?: "wrap" | "nowrap" | "wrap-reverse";
 }
 
 export const FlexBox = styled.div<IFlexBoxProps>`
@@ -36,4 +37,5 @@ export const FlexBox = styled.div<IFlexBoxProps>`
     props?.width ? props?.theme?.breakpoints?.[props?.width] : "100%"};
   width: 100%;
   gap: ${(props) => (props?.gap ? props?.theme?.spacing?.[props?.gap] : 0)};
+  flex-wrap: ${(props) => props?.wrap};
 `;
