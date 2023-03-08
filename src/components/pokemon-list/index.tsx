@@ -16,6 +16,7 @@ import {
 
 import type { IPokemonsSection } from "./types";
 import { atomPokemonOffset } from "@/store/atoms";
+import { ButtonsContainer } from "./atoms";
 
 const PokemonsSection: FC<IPokemonsSection> = ({
   loading,
@@ -55,9 +56,9 @@ const PokemonsSection: FC<IPokemonsSection> = ({
           ))}
         </FlexBox>
       </PokedexView>
-      <FlexBox
+      <ButtonsContainer
         align="center"
-        justify="flex-start"
+        justify="center"
         direction="row"
         gap="xxs"
         wrap="wrap"
@@ -76,7 +77,7 @@ const PokemonsSection: FC<IPokemonsSection> = ({
           </Button>
         )}
         {loading && <Loader />}
-      </FlexBox>
+      </ButtonsContainer>
     </>
   );
 };
